@@ -132,7 +132,6 @@ const PROP = Object.fromEntries(PROPOSALS.map(p => [p.id, p]));
 const STEPS = [
   { kind: 'hero', group: 'Visión', label: 'Mi visión', cam: 'all', reveal: ['vision'] },
   { kind: 'objectives', group: 'Objetivos', label: 'Los tres objetivos', cam: 'all' },
-  { kind: 'relation', group: 'Objetivos', label: 'Objetivos y pilares', cam: 'all' },
   { kind: 'pillar', group: 'Conectando', p: 'con', label: 'Conectando', cam: 'con', reveal: ['con'] },
   { kind: 'proposal', group: 'Conectando', id: '1.1', cam: '1.1', reveal: ['1.1'] },
   { kind: 'proposal', group: 'Conectando', id: '1.2', cam: '1.2', reveal: ['1.2'] },

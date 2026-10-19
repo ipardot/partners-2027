@@ -58,7 +58,7 @@ function camFor(step) {
   const k = step.kind;
   let region = k === 'hero' ? REGIONS.hero : k === 'objectives' ? REGIONS.objectives : k === 'closing' ? REGIONS.closing : REGIONS.left;
   if (isNarrow()) region = k === 'closing' ? [0.02, 0.08, 0.98, 0.45] : [0.02, 0.07, 0.98, 0.36];
-  const key = k === 'relation' || k === 'closing' ? 'core' : step.cam;
+  const key = k === 'closing' ? 'core' : step.cam;
   return { rect: worldRect(key), region, max: k === 'proposal' ? 1.9 : 1.5 };
 }
 function applyCamera() {
@@ -116,31 +116,13 @@ function objectivesHTML() {
     <ol class="olist">${[1, 2, 3].map(n => `<li><span class="onum">${n}</span><p>${OBJECTIVES[n].text}</p></li>`).join('')}</ol>
   </section>`;
 }
-function relationHTML() {
-  const rows = ['con', 'sir', 'cam'].map(pk => {
-    const ps = PROPOSALS.filter(p => p.pillar === pk);
-    return ps.map((p, k) => `<tr data-p="${pk}">
-      ${k === 0 ? `<th rowspan="${ps.length}" class="pcell"><span>${PILLARS[pk].name}</span></th>` : ''}
-      <td class="ncell"><b>${p.id}</b> ${p.name}</td>
-      ${[1, 2, 3].map(n => `<td class="dot">${p.main.includes(n) ? '<i class="m"></i>' : p.also.includes(n) ? '<i class="a"></i>' : ''}</td>`).join('')}
-    </tr>`).join('');
-  }).join('');
-  return `<section class="card side rel">
-    <p class="eyebrow">Objetivos y pilares</p>
-    <h2>Todo se conecta</h2>
-    <p class="lead">Los pilares organizan las propuestas; cada propuesta aporta a uno o varios objetivos.</p>
-    <table class="matrix"><thead><tr><th></th><th></th>${[1, 2, 3].map(n => `<th class="oh"><span class="onum sm">${n}</span><small>${OBJECTIVES[n].title}</small></th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
-    <p class="legend"><i class="m"></i> aporte principal <i class="a"></i> también aporta</p>
-  </section>`;
-}
 function pillarHTML(pk) {
   const pl = PILLARS[pk];
   return `<section class="card side pillar" data-p="${pk}">
     <p class="eyebrow">Pilar ${pl.n} de Partners</p>
     <h2 class="pt">${pl.name}</h2>
     <p class="lead">${pl.sub}</p>
-    <ul class="pcards">${PROPOSALS.filter(p => p.pillar === pk).map(p => `<li><span class="pid">${p.id}</span><div><h3>${p.name}</h3><p>${p.tagline}</p>
-      <div class="ochips">${p.main.map(n => objChip(n)).join('')}${p.also.map(n => objChip(n, true)).join('')}</div></div></li>`).join('')}</ul>
+    <ul class="pcards">${PROPOSALS.filter(p => p.pillar === pk).map(p => `<li><span class="pid">${p.id}</span><div><h3>${p.name}</h3><p>${p.tagline}</p></div></li>`).join('')}</ul>
   </section>`;
 }
 function proposalHTML(id) {
@@ -165,7 +147,7 @@ function proposalHTML(id) {
     <div class="qo"><div><p class="label">¿Qué es?</p><p>${p.que}</p></div><div><p class="label">Objetivo</p><p>${p.objetivo}</p></div></div>
     ${body}
     ${foot.join('')}
-    <footer class="pf"><span class="label">Aporta a</span>${p.main.map(n => objChip(n)).join('')}${p.also.map(n => objChip(n, true)).join('')}${p.nota ? `<p class="nota">${p.nota}</p>` : ''}</footer>
+    ${p.nota ? `<footer class="pf"><p class="nota">${p.nota}</p></footer>` : ''}
   </section>`;
 }
 function closingHTML() {
@@ -182,7 +164,6 @@ function panelHTML(step) {
   switch (step.kind) {
     case 'hero': return heroHTML();
     case 'objectives': return objectivesHTML();
-    case 'relation': return relationHTML();
     case 'pillar': return pillarHTML(step.p);
     case 'proposal': return proposalHTML(step.id);
     case 'closing': return closingHTML();
