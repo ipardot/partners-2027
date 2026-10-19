@@ -2,7 +2,7 @@
 
 Infografía interactiva para acompañar la exposición de **Alejandro Galeano Mejía**, candidato a la Presidencia de Partners Campus EAFIT 2027.
 
-Un mundo isométrico continuo que se recorre con la cámara: visión → tres objetivos → relación objetivos/pilares → Conectando, Sirviendo y Cambiando vidas (7 propuestas) → cierre. El mundo se va "construyendo" a medida que avanza la presentación.
+Un mundo isométrico continuo que se recorre con la cámara: visión → objetivos → relación objetivos/pilares → islas de Conectando, Sirviendo y Cambiando vidas (7 propuestas) → cierre. El mundo se va "construyendo" a medida que avanza la presentación.
 
 ## Controles
 
@@ -14,9 +14,12 @@ Un mundo isométrico continuo que se recorre con la cámara: visión → tres ob
 | Índice / acceso directo | I | Índice o puntos de progreso |
 | Pantalla completa | F | Pantalla completa |
 | Reducir animaciones | A | Animaciones |
+| Modo oscuro / claro | D | Modo oscuro |
 | Ir al inicio / al final | Inicio / Fin | — |
 
 La presentación nunca avanza sola. Los clickers de presentación (que envían AvPág/RePág) funcionan.
+
+El tema se recuerda en cada equipo; también se puede forzar con `?theme=dark` o `?theme=light` en la URL.
 
 ## Tu foto
 

@@ -8,7 +8,7 @@ const R2 = Math.SQRT2;
 
 const COL = {
   navy: '#16213a', conf: '#4e689b', insp: '#90aed1', salmon: '#fd7c5e', rojo: '#cf6b5b', mauve: '#8a6f8a',
-  land: '#f4f6ef', grass: '#e6eedc', stone: '#f3ede2', plank: '#e9dcc6', water: '#a9c8e6',
+  land: 'var(--w-land)', grass: 'var(--w-grass)', stone: 'var(--w-stone)', plank: '#e9dcc6', water: 'var(--w-water)',
   wall: '#fbf8f3', glass: '#d7e5f4', gold: '#f6c35b', trunk: '#8a6a52',
 };
 const SKIN = ['#f1c7a5', '#d9a27c', '#b77b56', '#8d5a3c', '#e8b796', '#c68e6b'];
@@ -23,8 +23,9 @@ function P(i, j, z) { return [OX + (i - j) * WT, OY + (i + j) * WH - (z || 0)]; 
 function UV(u, v) { return { i: (v + u) / 2, j: (v - u) / 2 }; }
 const f = n => Math.round(n * 10) / 10;
 const pts = a => a.map(p => f(p[0]) + ',' + f(p[1])).join(' ');
+const paint = c => String(c).startsWith('var(') ? `style="fill:${c}"` : `fill="${c}"`;
 const EDGE = 'stroke="rgba(22,33,58,.16)" stroke-width=".7" stroke-linejoin="round"';
-function poly(a, fill, extra) { return `<polygon points="${pts(a)}" fill="${fill}"${extra ? ' ' + extra : ''}/>`; }
+function poly(a, fill, extra) { return `<polygon points="${pts(a)}" ${paint(fill)}${extra ? ' ' + extra : ''}/>`; }
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = n >> 8 & 255, b = n & 255;
   const t = amt < 0 ? 0 : 255, p = Math.abs(amt);
@@ -42,7 +43,7 @@ function box(i, j, w, d, h, c, z = SH, o = {}) {
 function flat(i, j, w, d, c, z = SH, extra = '') { return poly([P(i, j, z), P(i + w, j, z), P(i + w, j + d, z), P(i, j + d, z)], c, extra); }
 function ell(i, j, r, c, z = SH, extra = '') {
   const [x, y] = P(i, j, z);
-  return `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(r * WT * R2)}" ry="${f(r * WH * R2)}" fill="${c}" ${extra}/>`;
+  return `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(r * WT * R2)}" ry="${f(r * WH * R2)}" ${paint(c)} ${extra}/>`;
 }
 function cyl(i, j, r, h, c, z = SH, o = {}) {
   const [x, yb] = P(i, j, z), yt = yb - h, rx = r * WT * R2, ry = r * WH * R2;
@@ -152,10 +153,7 @@ class Scene {
 
 /* ---------- Geografía ---------- */
 const ZONES = {
-  vision: { ...UV(0, 14), n: 10, side: COL.navy },
-  o1: { ...UV(-27, 40), n: 12, side: '#2c3d63' },
-  o2: { ...UV(0, 40), n: 12, side: '#2c3d63' },
-  o3: { ...UV(27, 40), n: 12, side: '#2c3d63' },
+  vision: { ...UV(0, 40), n: 12, side: COL.navy },
   con: { ...UV(-34, 77), n: 15, side: PILLARS.con.c },
   sir: { ...UV(0, 77), n: 15, side: PILLARS.sir.c },
   cam: { ...UV(34, 77), n: 15, side: PILLARS.cam.c },
@@ -166,7 +164,7 @@ const SITES = {
   '3.1': UV(30, 72), '3.2': UV(41, 79),
 };
 const CHAPTER_ISLES = [UV(-60, 70), UV(-58, 92), UV(-44, 104)];
-const DECOR_ISLES = [UV(58, 66), UV(54, 100), UV(-42, 18), UV(44, 16)];
+const DECOR_ISLES = [UV(58, 66), UV(54, 100), UV(-40, 34), UV(40, 30)];
 const ISLE_N = 4, ISLE_H = 14;
 
 const SLABS = [
@@ -176,10 +174,9 @@ const SLABS = [
 function onLand(i, j, m = 0) { return SLABS.some(s => i >= s.i0 - m && i <= s.i0 + s.n + m && j >= s.j0 - m && j <= s.j0 + s.n + m); }
 
 const DECKS = [
-  [[7, 10], [7, 29.5]], [[10, 7], [29.5, 7]], [[7, 20], [16, 20]], [[20, 7], [20, 16]],
-  [[10.5, 33.5], [21.5, 33.5], [21.5, 50]],
-  [[33.5, 10.5], [33.5, 21.5], [50, 21.5]],
-  [[24, 20], [29, 20], [29, 29], [38.5, 29], [38.5, 33]],
+  [[21.5, 25], [21.5, 50]],
+  [[25, 21.5], [50, 21.5]],
+  [[24, 24], [30, 24], [30, 30], [36, 30], [36, 33]],
   [[27.5, 58], [38.5, 58], [38.5, 44]],
   [[58, 27.5], [58, 42], [45, 42]],
 ];
@@ -216,7 +213,7 @@ function decks() {
           sc.add(-1000 + k++, flat(i0, j0, w, d, COL.stone, SH, 'stroke="#e2d8c6" stroke-width="1"'));
         } else {
           if (k % 3 === 0 && !onLand(ci, cj, 1.6)) sc.add(ci + cj - .01, box(ci - .22, cj - .22, .44, .44, SH - 3, '#c9bfae', 0));
-          sc.add(ci + cj, box(i0, j0, w, d, 3, COL.plank, SH - 3, { t: COL.stone }));
+          sc.add(ci + cj, box(i0, j0, w, d, 3, COL.plank, SH - 3, { t: COL.stone, l: 'var(--w-plank-l)', r: 'var(--w-plank-r)' }));
           k++;
         }
       }
@@ -243,71 +240,6 @@ function visionScene(c) {
   sc.add(i + j, faro);
   [[i - 2.4, j + 1.2, PILLARS.con.c], [i + 1.2, j + 2.4, PILLARS.sir.c], [i + 2.4, j - 1.2, PILLARS.cam.c]].forEach(([a, b, col]) => sc.add(a + b, flagPole(a, b, 44, col)));
   [[i - 1.8, j + 2.8], [i + 2.9, j + 1.6], [i - 2.9, j - 1.4], [i + 1.5, j - 2.9], [i + 3.1, j - 3.0]].forEach(([a, b]) => sc.add(a + b, person(a, b)));
-  return sc.out();
-}
-
-function o1Scene(c) { // Zona de encuentro: plaza circular, caminos y un puente
-  const sc = new Scene(), { i, j } = c;
-  sc.add(-90, flat(i - .65, j - 5.8, 1.3, 11.6, COL.stone) + flat(i - 5.8, j - .65, 11.6, 1.3, COL.stone));
-  sc.add(-89, flat(i + 3.4, j - 6, 1.1, 12, COL.water) + flat(i + 3.4, j - 6, .14, 12, '#8db6dd'));
-  sc.add(-80, ell(i, j, 2.9, COL.stone) + ell(i, j, 2.9, 'none', SH, `stroke="${COL.salmon}" stroke-width="3"`) + ell(i, j, .9, '#e8dcc8'));
-  sc.add(i + 3.9 + j, box(i + 3.1, j - .85, 1.7, 1.7, 4, COL.plank, SH + 1, { t: COL.stone }));
-  const [bx1, by1] = P(i + 3.1, j + .85, SH + 5), [bx2, by2] = P(i + 4.8, j + .85, SH + 5);
-  sc.add(i + 4 + j + .9, `<path d="M${f(bx1)},${f(by1)}Q${f((bx1 + bx2) / 2)},${f(by1 - 14)} ${f(bx2)},${f(by2)}" stroke="#a87a55" stroke-width="2.5" fill="none"/>`);
-  sc.add(i + 4 + j - .9, (() => { const [x1, y1] = P(i + 3.1, j - .85, SH + 5), [x2, y2] = P(i + 4.8, j - .85, SH + 5); return `<path d="M${f(x1)},${f(y1)}Q${f((x1 + x2) / 2)},${f(y1 - 14)} ${f(x2)},${f(y2)}" stroke="#a87a55" stroke-width="2.5" fill="none"/>`; })());
-  sc.add(i + j, cyl(i, j, .55, 6, '#b98a63'));
-  const ring = 8;
-  for (let k = 0; k < ring; k++) {
-    const a = k / ring * Math.PI * 2 + .3, pi = i + Math.cos(a) * 1.9, pj = j + Math.sin(a) * 1.9;
-    sc.add(pi + pj, person(pi, pj, SHIRT[k % SHIRT.length]));
-  }
-  sc.add(i + 4 + j, person(i + 3.95, j - .2, COL.salmon, SH + 5) + person(i + 4.15, j + .35, COL.conf, SH + 5));
-  [[i - 4.4, j - 3], [i - 3, j - 4.4], [i + 2.2, j + 4], [i - 4, j + 3.3]].forEach(([a, b], k) => sc.add(a + b, k % 2 ? bench(a, b) : bench(a, b)));
-  [[i - 4.6, j - 4.6, 0], [i + 5.2, j - 4.7, 1], [i - 4.8, j + 4.9, 2], [i + 5.3, j + 5.1, 0], [i + 1.8, j - 4.6, 2], [i - 4.6, j + 1.7, 1], [i + 1.9, j + 5.2, 1], [i + 5.2, j + 2.2, 2]]
-    .forEach(([a, b, k]) => sc.add(a + b, tree(a, b, 1.1, k)));
-  [[i - 1.8, j - 1.8], [i + 1.9, j + 1.9]].forEach(([a, b]) => sc.add(a + b, lamp(a, b)));
-  [[i - .2, j + 4.4], [i - 3.6, j + .1], [i + .1, j - 3.8], [i + 5.4, j - .2]].forEach(([a, b]) => sc.add(a + b, person(a, b)));
-  return sc.out();
-}
-
-function o2Scene(c) { // Zona de coordinación: sede, equipos conectados y escenario
-  const sc = new Scene(), { i, j } = c;
-  sc.add(-90, flat(i - 4.5, j - .5, 9, 1, COL.stone) + flat(i - .5, j - 4.5, 1, 9, COL.stone)
-    + flat(i - 4.5, j - 4.5, 9, .8, COL.stone) + flat(i - 4.5, j - 4.5, .8, 9, COL.stone) + flat(i + 3.7, j - 4.5, .8, 9, COL.stone) + flat(i - 4.5, j + 3.7, 9, .8, COL.stone));
-  sc.add(i + j - 2, building(i - 1.8, j - 1.8, 2.6, 2.6, 52, COL.conf, { rows: 3, door: true }) + flagPole(i - .5, j - .5, 30, COL.salmon, SH + 52));
-  [[i - 5.2, j - 5.2, COL.insp], [i + 2.6, j - 5.4, COL.mauve], [i - 5.4, j + 2.6, COL.rojo]].forEach(([a, b, col]) =>
-    sc.add(a + b + 2, building(a, b, 2, 2, 26, col === COL.insp ? '#d9e5f2' : COL.wall, { roof: 'gable', roofC: col, rows: 1, door: true })));
-  // escenario de eventos
-  const si = i + 1.6, sj = j + 1.6;
-  sc.add(si + sj, box(si, sj, 3.2, 2.6, 6, '#3a4766') + box(si, sj, 3.2, .3, 30, COL.navy, SH + 6)
-    + box(si - .1, sj - .1, 3.4, 1.4, 2, COL.salmon, SH + 36));
-  sc.add(si + sj + 2, person(si + 1.6, sj + 1.2, COL.gold, SH + 6));
-  [[si + 3.9, sj + .4], [si + 3.9, sj + 1.4], [si + 4.4, sj + 2.3], [si + .8, sj + 3.6], [si + 1.9, sj + 3.8], [si + 3, sj + 3.6]].forEach(([a, b]) => sc.add(a + b, person(a, b)));
-  [[i - 5, j + 5.1, 0], [i + 5.2, j - 5, 1], [i + 5.3, j + 5.4, 2], [i - 5.3, j - 1, 1]].forEach(([a, b, k]) => sc.add(a + b, tree(a, b, 1, k)));
-  [[i - 3.6, j - .1], [i - .1, j - 3.4], [i + .2, j + 3.9], [i - 2.1, j + 4.1]].forEach(([a, b]) => sc.add(a + b, person(a, b)));
-  [[i - 3.3, j + 1.4], [i + 1.3, j - 3.4]].forEach(([a, b]) => sc.add(a + b, crate(a, b, COL.plank) + crate(a + .55, b, COL.salmon)));
-  return sc.out();
-}
-
-function o3Scene(c) { // Zona de crecimiento: terrazas ascendentes, aprendizaje y caminos
-  const sc = new Scene(), { i, j } = c;
-  sc.add(-90, flat(i + 2.8, j - .5, 3.2, 1, COL.stone) + flat(i - .5, j + 2.8, 1, 3.2, COL.stone));
-  let t = box(i - 2.8, j - 2.8, 5.6, 5.6, 12, '#cfe0c4', SH, { t: '#e2edd6' })
-    + box(i - 1.9, j - 1.9, 3.8, 3.8, 12, '#c2d7b5', SH + 12, { t: '#dbe9cd' })
-    + box(i - 1, j - 1, 2, 2, 12, '#b5cea6', SH + 24, { t: '#d3e5c4' });
-  // escalones en la cara frontal
-  for (let k = 0; k < 3; k++) t += box(i + 2.8 - k * .9, j - .5, .9, 1, 12 * (k + 1), '#efe7d8', SH, { t: COL.stone });
-  sc.add(i + j, t);
-  sc.add(i + j + .1, tree(i, j, 1.6, 0, SH + 36) + flagPole(i + .6, j - .6, 46, COL.salmon, SH + 36));
-  sc.add(i + j + 6, person(i + 3.2, j, COL.conf, SH + 12) + person(i + 2.3, j, COL.mauve, SH + 24) + person(i + 1.4, j + .1, COL.salmon, SH + 36));
-  sc.add(i - 5 + j - 2, building(i - 5.4, j - 3.6, 2.2, 2.6, 26, COL.wall, { roof: 'gable', roofC: COL.salmon, rows: 1, door: true }));
-  sc.add(i + 3 + j - 5, building(i + 2.4, j - 5.4, 2.6, 2, 22, '#e3ecf6', { roof: 'gable', roofC: COL.conf, rows: 1, door: true }));
-  // señal de caminos
-  const [sx, sy] = P(i + 4.6, j + 3.2, SH);
-  sc.add(i + j + 8, `<line x1="${f(sx)}" y1="${f(sy)}" x2="${f(sx)}" y2="${f(sy - 38)}" stroke="#7a5b45" stroke-width="2.5"/>`
-    + `<path d="M${f(sx)},${f(sy - 36)}h20l6,5l-6,5h-20z" fill="${COL.salmon}"/><path d="M${f(sx)},${f(sy - 24)}h-20l-6,5l6,5h20z" fill="${COL.conf}"/>`);
-  [[i - 4.6, j + 4.8, 1], [i + 5, j + 5, 0], [i + 5.2, j - 2.4, 2], [i - 2, j + 5.2, 0], [i - 5.2, j + 1.2, 2]].forEach(([a, b, k]) => sc.add(a + b, tree(a, b, 1, k)));
-  [[i + 4.5, j - .2], [i - .1, j + 4.6], [i - 3.6, j + 3.6], [i - 4.2, j - .8], [i + .2, j + 5.3]].forEach(([a, b]) => sc.add(a + b, person(a, b)));
   return sc.out();
 }
 
@@ -507,10 +439,8 @@ function seaDecor() {
 
 /* ---------- Ensamblaje ---------- */
 const SITE_FN = { '1.1': s11, '1.2': s12, '1.3': s13, '2.1': s21, '2.2': s22, '3.1': s31, '3.2': s32 };
-const ZONE_FN = { vision: visionScene, o1: o1Scene, o2: o2Scene, o3: o3Scene };
+const ZONE_FN = { vision: visionScene };
 
-function anchorSite(id) { const s = SITES[id]; return P(s.i, s.j, SH + 146); }
-function anchorObj(n) { const z = ZONES['o' + n]; return P(z.i, z.j, SH + 150); }
 
 function buildWorld() {
   const groups = [];
@@ -518,16 +448,6 @@ function buildWorld() {
   ['con', 'sir', 'cam'].forEach(k => groups.push({ g: k, d: ZONES[k].i + ZONES[k].j - 20, svg: territoryDecor(k) }));
   Object.entries(SITE_FN).forEach(([id, fn]) => groups.push({ g: id, d: SITES[id].i + SITES[id].j, svg: fn(SITES[id]) + (id === '1.3' ? chapterIsles() : '') }));
   groups.sort((a, b) => a.d - b.d);
-
-  // arcos de contribución propuesta → objetivo
-  let arcs = '';
-  PROPOSALS.forEach(p => {
-    [...p.main.map(n => [n, 'main']), ...p.also.map(n => [n, 'also'])].forEach(([n, type]) => {
-      const [x1, y1] = anchorSite(p.id), [x2, y2] = anchorObj(n);
-      const mx = (x1 + x2) / 2, my = Math.min(y1, y2) - 120 - Math.abs(x1 - x2) * .08;
-      arcs += `<path class="arc ${type}" data-site="${p.id}" data-obj="${n}" style="--pc:${PILLARS[p.pillar].c}" d="M${f(x1)},${f(y1)}Q${f(mx)},${f(my)} ${f(x2)},${f(y2)}"/>`;
-    });
-  });
 
   // marcadores
   let pins = '';
@@ -537,26 +457,15 @@ function buildWorld() {
       + `<circle class="pulse" cx="${f(x)}" cy="${f(y)}" r="27" fill="${PILLARS[p.pillar].c}"/><circle cx="${f(x)}" cy="${f(y)}" r="27" fill="${PILLARS[p.pillar].c}" stroke="#fff" stroke-width="4"/>`
       + `<text x="${f(x)}" y="${f(y + 7)}" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">${p.id}</text></g>`;
   });
-  [1, 2, 3].forEach(n => {
-    const z = ZONES['o' + n], [x, y] = P(z.i, z.j, SH + 150);
-    pins += `<g class="pin g" data-g="o${n}" data-pin="o${n}"><circle class="pulse" cx="${f(x)}" cy="${f(y)}" r="30" fill="${COL.navy}"/><circle cx="${f(x)}" cy="${f(y)}" r="30" fill="${COL.navy}" stroke="#fff" stroke-width="4"/>`
-      + `<text x="${f(x)}" y="${f(y + 9)}" text-anchor="middle" font-size="26" font-weight="800" fill="#fff">${n}</text></g>`;
-  });
-
   // rótulos en el agua
   let labels = '';
   ['con', 'sir', 'cam'].forEach(k => {
     const z = ZONES[k], [x, y] = P(z.i + z.n / 2, z.j + z.n / 2, 0);
-    labels += `<text class="tlabel g" data-g="${k}" x="${f(x)}" y="${f(y + 62)}" text-anchor="middle" fill="${PILLARS[k].d}">${PILLARS[k].name.toUpperCase()}</text>`;
-  });
-  [1, 2, 3].forEach(n => {
-    const z = ZONES['o' + n], [x, y] = P(z.i + z.n / 2, z.j + z.n / 2, 0);
-    labels += `<text class="olabel g" data-g="o${n}" x="${f(x)}" y="${f(y + 46)}" text-anchor="middle"><tspan class="olabel-n">OBJETIVO ${n}</tspan><tspan x="${f(x)}" dy="36">${OBJECTIVES[n].title}</tspan></text>`;
+    labels += `<text class="tlabel g" data-g="${k}" x="${f(x)}" y="${f(y + 62)}" text-anchor="middle">${PILLARS[k].name.toUpperCase()}</text>`;
   });
 
   const svg = `<svg id="world" xmlns="http://www.w3.org/2000/svg" width="${WORLD_W}" height="${WORLD_H}" viewBox="0 0 ${WORLD_W} ${WORLD_H}" aria-hidden="true">
 <defs>
-  <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfeaf5"/><stop offset="1" stop-color="#c9dbee"/></linearGradient>
   <radialGradient id="halo"><stop offset="0" stop-color="#ffe7a8" stop-opacity=".95"/><stop offset="1" stop-color="#ffe7a8" stop-opacity="0"/></radialGradient>
 </defs>
 
@@ -565,7 +474,6 @@ function buildWorld() {
 <g class="labels">${labels}</g>
 <g class="decor">${decorIsles()}</g>
 <g class="objects">${groups.map(o => `<g class="g" data-g="${o.g}">${o.svg}</g>`).join('')}</g>
-<g class="arcs">${arcs}</g>
 <g class="pins">${pins}</g>
 </svg>`;
   return svg;
@@ -574,9 +482,8 @@ function buildWorld() {
 /* rectángulos de cámara (coordenadas del mundo) */
 function worldRect(key) {
   const fromCenter = (c, r, top = 110) => { const [x, y] = P(c.i, c.j, SH); return { x: x - r * WT, y: y - r * WH - top, w: 2 * r * WT, h: 2 * r * WH + top + SH }; };
-  if (key === 'all') return { x: 40, y: 70, w: WORLD_W - 80, h: WORLD_H - 90 };
-  if (key === 'core') { const a = fromCenter(ZONES.con, 15.5, 0), b = fromCenter(ZONES.cam, 15.5, 0), v = fromCenter(ZONES.vision, 10, 150); return { x: a.x, y: v.y, w: b.x + b.w - a.x, h: a.y + a.h + 90 - v.y }; }
-  if (key === 'objrow') { const a = fromCenter(ZONES.o1, 12.5, 170), b = fromCenter(ZONES.o3, 12.5, 170); return { x: a.x, y: a.y, w: b.x + b.w - a.x, h: a.h + 60 }; }
+  if (key === 'all') { const top = fromCenter(ZONES.vision, ZONES.vision.n, 0).y - 260; return { x: 40, y: top, w: WORLD_W - 80, h: WORLD_H - 20 - top }; }
+  if (key === 'core') { const a = fromCenter(ZONES.con, 15.5, 0), b = fromCenter(ZONES.cam, 15.5, 0), v = fromCenter(ZONES.vision, 12, 170); return { x: a.x, y: v.y, w: b.x + b.w - a.x, h: a.y + a.h + 90 - v.y }; }
   if (ZONES[key]) return fromCenter(ZONES[key], ZONES[key].n + .8, 170);
   if (key === '1.3') { // incluye las islas de otros capítulos y sus rutas
     const r = fromCenter(SITES[key], 6.6, 150), xs = CHAPTER_ISLES.map(c => P(c.i, c.j, 0));

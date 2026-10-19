@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
+  <script>try{var t=new URLSearchParams(location.search).get("theme")||localStorage.getItem("p27-theme");document.documentElement.dataset.theme=t||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Partners 2027 · Un mundo de propuestas</title>
   <meta name="description" content="Alejandro Galeano Mejía · Propuestas para la Presidencia de Partners Campus EAFIT 2027.">
@@ -17,12 +18,14 @@
     <main id="panel" class="panel" aria-live="polite"></main>
 
     <header id="topbar" class="chrome">
-      <img class="logo" src="assets/logo-partners.webp" alt="Partners Campus">
+      <img class="logo logo-light" src="assets/logo-partners.webp" alt="Partners Campus">
+      <img class="logo logo-dark" src="assets/logo-partners-blanco.webp" alt="Partners Campus">
       <div id="crumb" class="crumb"></div>
       <div class="tools">
         <button id="btn-index" class="tool" title="Índice de secciones (I)"></button>
         <button id="btn-pano" class="tool" title="Vista panorámica (P)"></button>
         <button id="btn-motion" class="tool" title="Reducir animaciones (A)" aria-pressed="false"></button>
+        <button id="btn-theme" class="tool" title="Modo oscuro (D)" aria-pressed="false"></button>
         <button id="btn-full" class="tool" title="Pantalla completa (F)"></button>
       </div>
     </header>
@@ -36,7 +39,7 @@
 
     <div id="index" class="index" hidden>
       <div class="index-box" role="dialog" aria-label="Índice">
-        <div class="index-head"><h2>Recorrido</h2><p>Teclado: ← → avanzar · P panorámica · I índice · F pantalla completa · A animaciones</p><button id="index-close" class="tool" aria-label="Cerrar"></button></div>
+        <div class="index-head"><h2>Recorrido</h2><p>Teclado: ← → avanzar · P panorámica · I índice · F pantalla completa · A animaciones · D modo oscuro</p><button id="index-close" class="tool" aria-label="Cerrar"></button></div>
         <div id="index-list" class="index-list"></div>
       </div>
     </div>

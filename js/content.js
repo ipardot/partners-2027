@@ -131,10 +131,7 @@ const PROP = Object.fromEntries(PROPOSALS.map(p => [p.id, p]));
 /* Recorrido. cam: destino de la cámara; reveal: lo que se "construye" en el mundo al llegar. */
 const STEPS = [
   { kind: 'hero', group: 'Visión', label: 'Mi visión', cam: 'all', reveal: ['vision'] },
-  { kind: 'objectives', group: 'Objetivos', label: 'Los tres objetivos', cam: 'objrow', reveal: ['o1', 'o2', 'o3'] },
-  { kind: 'objective', group: 'Objetivos', n: 1, label: OBJECTIVES[1].title, cam: 'o1' },
-  { kind: 'objective', group: 'Objetivos', n: 2, label: OBJECTIVES[2].title, cam: 'o2' },
-  { kind: 'objective', group: 'Objetivos', n: 3, label: OBJECTIVES[3].title, cam: 'o3' },
+  { kind: 'objectives', group: 'Objetivos', label: 'Los tres objetivos', cam: 'all' },
   { kind: 'relation', group: 'Objetivos', label: 'Objetivos y pilares', cam: 'all' },
   { kind: 'pillar', group: 'Conectando', p: 'con', label: 'Conectando', cam: 'con', reveal: ['con'] },
   { kind: 'proposal', group: 'Conectando', id: '1.1', cam: '1.1', reveal: ['1.1'] },

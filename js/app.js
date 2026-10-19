@@ -26,6 +26,8 @@ const ICONS = {
   motion: '<path d="M3 12h3l2-5 4 10 2-5h7"/>',
   full: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
 };
 const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -47,15 +49,15 @@ const REGIONS = {
   left: [0.015, 0.1, 0.5, 0.88],
   full: [0.02, 0.1, 0.98, 0.88],
   hero: [0.33, 0.06, 1.0, 0.94],
-  top: [0.03, 0.12, 0.97, 0.6],
+  objectives: [0.47, 0.06, 1.0, 0.94],
   closing: [0.03, 0.065, 0.97, 0.6],
 };
 const isNarrow = () => stage.clientWidth < 900 || stage.clientWidth / stage.clientHeight < 1.15;
 function camFor(step) {
   if (pano) return { rect: worldRect('all'), region: REGIONS.full };
   const k = step.kind;
-  let region = k === 'hero' ? REGIONS.hero : k === 'objectives' ? REGIONS.top : k === 'closing' ? REGIONS.closing : REGIONS.left;
-  if (isNarrow()) region = k === 'objectives' || k === 'closing' ? [0.02, 0.08, 0.98, 0.45] : [0.02, 0.07, 0.98, 0.36];
+  let region = k === 'hero' ? REGIONS.hero : k === 'objectives' ? REGIONS.objectives : k === 'closing' ? REGIONS.closing : REGIONS.left;
+  if (isNarrow()) region = k === 'closing' ? [0.02, 0.08, 0.98, 0.45] : [0.02, 0.07, 0.98, 0.36];
   const key = k === 'relation' || k === 'closing' ? 'core' : step.cam;
   return { rect: worldRect(key), region, max: k === 'proposal' ? 1.9 : 1.5 };
 }
@@ -78,27 +80,19 @@ function applyCamera() {
 /* ---------- Estado del mundo ---------- */
 function applyWorldState() {
   const step = STEPS[cur];
-  const focus = pano ? null : step.kind === 'proposal' ? step.id : step.kind === 'objective' ? 'o' + step.n : step.kind === 'pillar' ? step.p : null;
+  const focus = pano ? null : step.kind === 'proposal' ? step.id : step.kind === 'pillar' ? step.p : null;
   const all = step.kind === 'closing';
   world.querySelectorAll('.g').forEach(el => {
     const g = el.dataset.g, at = REVEAL_AT[g];
     el.classList.toggle('built', all || at === undefined || cur >= at);
     el.classList.toggle('focus', g === focus || (step.kind === 'pillar' && el.dataset.pin && PROP[el.dataset.pin]?.pillar === step.p));
   });
-  world.classList.toggle('show-arcs', step.kind === 'relation' || all);
-  world.classList.toggle('flow', step.kind === 'relation' || all);
   world.classList.toggle('pano', pano);
   world.classList.toggle('closeup', !pano && step.kind === 'proposal');
-  world.querySelectorAll('.arc').forEach(a => {
-    const site = a.dataset.site, obj = +a.dataset.obj;
-    const on = (step.kind === 'proposal' && site === step.id) || (step.kind === 'objective' && obj === step.n && cur >= 0);
-    a.classList.toggle('on', on);
-    a.classList.toggle('dim', !on && cur >= (REVEAL_AT[site] ?? 99));
-  });
 }
 
 /* ---------- Paneles ---------- */
-const chip = (pid) => { const p = PILLARS[pid]; return `<span class="chip" style="--c:${p.c};--d:${p.d};--l:${p.l}">${p.name}</span>`; };
+const chip = (pid) => `<span class="chip" data-p="${pid}">${PILLARS[pid].name}</span>`;
 const objChip = (n, also) => `<span class="ochip${also ? ' also' : ''}"><b>${n}</b>${OBJECTIVES[n].title}</span>`;
 
 function heroHTML() {
@@ -116,27 +110,17 @@ function heroHTML() {
   </section>`;
 }
 function objectivesHTML() {
-  return `<div class="ov-title"><p class="eyebrow">El propósito</p><h2>Tres objetivos para la Presidencia 2027</h2></div>
-  <div class="ov-cards">${[1, 2, 3].map(n => `<article class="card ov">
-    <span class="onum">${n}</span><div><p class="eyebrow">Objetivo ${n}</p><h3>${OBJECTIVES[n].title}</h3></div></article>`).join('')}</div>`;
-}
-function objectiveHTML(n) {
-  const o = OBJECTIVES[n];
-  const props = PROPOSALS.filter(p => p.main.includes(n) || p.also.includes(n))
-    .sort((a, b) => (b.main.includes(n) - a.main.includes(n)) || a.id.localeCompare(b.id));
-  return `<section class="card side obj">
-    <div class="obj-head"><span class="onum big">${n}</span><div><p class="eyebrow">Objetivo ${n}</p><h2>${o.title}</h2></div></div>
-    <blockquote class="otext">“${o.text}”</blockquote>
-    <div class="block"><p class="label">${icon('arrow')}Lo hacemos realidad con</p>
-      <ul class="plist">${props.map(p => `<li style="--c:${PILLARS[p.pillar].c}"><span class="pid">${p.id}</span><span class="pname">${p.name}</span>${chip(p.pillar)}${p.main.includes(n) ? '' : '<span class="tag">también aporta</span>'}</li>`).join('')}</ul>
-    </div>
+  return `<section class="card hero objs">
+    <p class="eyebrow">Presidencia 2027 · Partners Campus EAFIT</p>
+    <h1>Objetivos</h1>
+    <ol class="olist">${[1, 2, 3].map(n => `<li><span class="onum">${n}</span><p>${OBJECTIVES[n].text}</p></li>`).join('')}</ol>
   </section>`;
 }
 function relationHTML() {
   const rows = ['con', 'sir', 'cam'].map(pk => {
     const ps = PROPOSALS.filter(p => p.pillar === pk);
-    return ps.map((p, k) => `<tr style="--c:${PILLARS[pk].c}">
-      ${k === 0 ? `<th rowspan="${ps.length}" class="pcell" style="--c:${PILLARS[pk].c};--l:${PILLARS[pk].l};--d:${PILLARS[pk].d}"><span>${PILLARS[pk].name}</span></th>` : ''}
+    return ps.map((p, k) => `<tr data-p="${pk}">
+      ${k === 0 ? `<th rowspan="${ps.length}" class="pcell"><span>${PILLARS[pk].name}</span></th>` : ''}
       <td class="ncell"><b>${p.id}</b> ${p.name}</td>
       ${[1, 2, 3].map(n => `<td class="dot">${p.main.includes(n) ? '<i class="m"></i>' : p.also.includes(n) ? '<i class="a"></i>' : ''}</td>`).join('')}
     </tr>`).join('');
@@ -151,7 +135,7 @@ function relationHTML() {
 }
 function pillarHTML(pk) {
   const pl = PILLARS[pk];
-  return `<section class="card side pillar" style="--c:${pl.c};--d:${pl.d};--l:${pl.l}">
+  return `<section class="card side pillar" data-p="${pk}">
     <p class="eyebrow">Pilar ${pl.n} de Partners</p>
     <h2 class="pt">${pl.name}</h2>
     <p class="lead">${pl.sub}</p>
@@ -176,7 +160,7 @@ function proposalHTML(id) {
   }
   const foot = [];
   if (p.impacto) foot.push(`<div class="impact"><p class="label">Impacto esperado</p><p>${p.impacto}</p></div>`);
-  return `<section class="card side prop" style="--c:${pl.c};--d:${pl.d};--l:${pl.l}">
+  return `<section class="card side prop" data-p="${p.pillar}">
     <header class="ph"><span class="pid big">${p.id}</span><div><p class="eyebrow">${chip(p.pillar)} ${esc(p.tagline)}</p><h2>${p.name}</h2></div></header>
     <div class="qo"><div><p class="label">¿Qué es?</p><p>${p.que}</p></div><div><p class="label">Objetivo</p><p>${p.objetivo}</p></div></div>
     ${body}
@@ -198,7 +182,6 @@ function panelHTML(step) {
   switch (step.kind) {
     case 'hero': return heroHTML();
     case 'objectives': return objectivesHTML();
-    case 'objective': return objectiveHTML(step.n);
     case 'relation': return relationHTML();
     case 'pillar': return pillarHTML(step.p);
     case 'proposal': return proposalHTML(step.id);
@@ -221,7 +204,7 @@ function renderPanel() {
 }
 /* reduce el tamaño del texto si un panel no cabe en pantalla */
 function fitPanel() {
-  const card = panel.querySelector('.card.side, .card.closing, .card.hero');
+  const card = panel.querySelector('.card');
   if (!card) return;
   card.style.fontSize = '';
   let fs = 1;
@@ -259,6 +242,7 @@ function buildChrome() {
   $('#btn-pano').innerHTML = icon('pano') + '<span>Panorámica</span>';
   $('#btn-motion').innerHTML = icon('motion') + '<span>Animaciones</span>';
   $('#btn-full').innerHTML = icon('full') + '<span>Pantalla completa</span>';
+  updateThemeBtn();
   $('#index-close').innerHTML = icon('close');
   $('#progress').innerHTML = GROUPS.map(g => `<div class="pg" data-group="${g}"><div class="pg-dots">${STEPS.map((s, k) => s.group === g ? `<button class="pdot" data-k="${k}" title="${esc(s.label)}" aria-label="${esc(s.label)}"></button>` : '').join('')}</div><span class="pg-l">${g}</span></div>`).join('');
   $('#index-list').innerHTML = GROUPS.map(g => `<div class="ix-g"><h3>${g}</h3>${STEPS.map((s, k) => s.group === g ? `<button class="ix" data-k="${k}"><span class="ix-n">${k + 1}</span>${s.kind === 'proposal' ? `<b>${s.id}</b> ` : ''}${esc(s.label)}</button>` : '').join('')}</div>`).join('');
@@ -287,12 +271,26 @@ function setCalm(on) {
   $('#btn-motion').title = on ? 'Animaciones reducidas (A)' : 'Reducir animaciones (A)';
   try { localStorage.setItem('p27-calm', on ? '1' : '0'); } catch (e) { }
 }
+function updateThemeBtn() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const b = $('#btn-theme');
+  b.innerHTML = icon(dark ? 'sun' : 'moon') + `<span>${dark ? 'Modo claro' : 'Modo oscuro'}</span>`;
+  b.setAttribute('aria-pressed', dark);
+  b.title = (dark ? 'Modo claro' : 'Modo oscuro') + ' (D)';
+}
+function toggleTheme() {
+  const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('p27-theme', t); } catch (e) { }
+  updateThemeBtn();
+}
 function toggleFull() {
   if (document.fullscreenElement) document.exitFullscreen?.();
   else document.documentElement.requestFullscreen?.().catch(() => { });
 }
 
 buildChrome();
+if (/netlify\.app$/.test(location.hostname)) document.body.classList.add('netlify');
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.id === 'btn-next') next();
@@ -302,6 +300,7 @@ document.addEventListener('click', e => {
   else if (b.id === 'btn-pano') togglePano();
   else if (b.id === 'btn-motion') setCalm(!document.body.classList.contains('calm'));
   else if (b.id === 'btn-full') toggleFull();
+  else if (b.id === 'btn-theme') toggleTheme();
   else if (b.dataset.k !== undefined) { openIndex(false); go(+b.dataset.k); }
   b.blur?.();
 });
@@ -319,6 +318,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'p' || k === 'P' || k === 'v' || k === 'V') togglePano();
   else if (k === 'i' || k === 'I' || k === 'm' || k === 'M') openIndex();
   else if (k === 'f' || k === 'F') toggleFull();
+  else if (k === 'd' || k === 'D') toggleTheme();
   else if (k === 'a' || k === 'A') setCalm(!document.body.classList.contains('calm'));
   else if (k === 'Escape') { if (idx) openIndex(false); else if (pano) togglePano(false); }
 });
