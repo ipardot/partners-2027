@@ -13,9 +13,9 @@ const PILLARS = {
 };
 
 const OBJECTIVES = {
-  1: { title: 'Una Presidencia cercana', zone: 'Zona de encuentro', icon: 'users',
+  1: { title: 'Trascendiendo fronteras', zone: 'Zona de encuentro', icon: 'users',
     text: 'Que cada Partner se sienta escuchado, acompañado y parte de una familia que trasciende fronteras.' },
-  2: { title: 'Una organización que funciona', zone: 'Zona de coordinación', icon: 'route',
+  2: { title: 'Equipos Alineados', zone: 'Zona de coordinación', icon: 'route',
     text: 'Consolidar procesos organizados, equipos alineados y eventos que reflejen lo mejor de Partners.' },
   3: { title: 'Crecimiento con propósito', zone: 'Zona de crecimiento', icon: 'spark',
     text: 'Lograr que cada persona encuentre en Partners un espacio para crecer, liderar y generar impacto.' },

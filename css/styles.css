@@ -170,6 +170,7 @@ p { font-size: 1rem; line-height: 1.45; }
 .olist li { display: flex; gap: 1.2rem; align-items: flex-start; padding-left: 1.3rem; border-left: .45rem solid var(--salmon); }
 .olist p { font-size: 1.55rem; font-weight: 600; line-height: 1.35; }
 .olist .onum { width: 3.2rem; height: 3.2rem; font-size: 1.5rem; }
+.otitle { font-size: 1rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--rojo-osc); margin-bottom: .25rem; }
 /* Objetivos: vista general (anterior) */
 .ov-title { align-self: flex-start; background: rgba(255, 255, 255, .92); padding: 1.1rem 1.6rem; border-radius: 1.2rem; box-shadow: 0 10px 30px rgba(22, 33, 58, .1); }
 .ov-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4vw; }
@@ -370,6 +371,7 @@ body.netlify #bottombar { padding-right: calc(1.4rem + 200px); }
   .olist { gap: .9rem; margin-top: 1rem; }
   .olist li { gap: .8rem; padding-left: .9rem; border-left-width: .3rem; align-items: center; }
   .olist p { font-size: 1.08rem; line-height: 1.35; }
+  .otitle { font-size: .8rem; }
   .olist .onum { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; }
 
   .pt { font-size: 2.2rem; }

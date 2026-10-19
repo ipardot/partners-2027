@@ -113,7 +113,7 @@ function objectivesHTML() {
   return `<section class="card hero objs">
     <p class="eyebrow">Presidencia 2027 · Partners Campus EAFIT</p>
     <h1>Objetivos</h1>
-    <ol class="olist">${[1, 2, 3].map(n => `<li><span class="onum">${n}</span><p>${OBJECTIVES[n].text}</p></li>`).join('')}</ol>
+    <ol class="olist">${[1, 2, 3].map(n => `<li><span class="onum">${n}</span><div><h3 class="otitle">${OBJECTIVES[n].title}</h3><p>${OBJECTIVES[n].text}</p></div></li>`).join('')}</ol>
   </section>`;
 }
 function pillarHTML(pk) {
