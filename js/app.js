@@ -57,7 +57,7 @@ function camFor(step) {
   if (pano) return { rect: worldRect('all'), region: REGIONS.full };
   const k = step.kind;
   let region = k === 'hero' ? REGIONS.hero : k === 'objectives' ? REGIONS.objectives : k === 'closing' ? REGIONS.closing : REGIONS.left;
-  if (isNarrow()) region = k === 'closing' ? [0.02, 0.08, 0.98, 0.45] : [0.02, 0.07, 0.98, 0.36];
+  if (isNarrow()) region = k === 'closing' ? [0.02, 0.07, 0.98, 0.42] : [0.02, 0.06, 0.98, 0.34];
   const key = k === 'closing' ? 'core' : step.cam;
   return { rect: worldRect(key), region, max: k === 'proposal' ? 1.9 : 1.5 };
 }
@@ -190,7 +190,8 @@ function fitPanel() {
   card.style.fontSize = '';
   let fs = 1;
   const limit = panel.clientHeight;
-  while (card.scrollHeight > limit && fs > 0.66) { fs -= 0.04; card.style.fontSize = fs + 'em'; }
+  const min = isNarrow() ? 0.94 : 0.66; // en celular se prefiere desplazar que achicar el texto
+  while (card.scrollHeight > limit && fs > min) { fs -= 0.04; card.style.fontSize = fs + 'em'; }
 }
 
 /* ---------- Navegación ---------- */
